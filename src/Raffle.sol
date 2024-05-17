@@ -8,11 +8,14 @@ import {VRFConsumerBaseV2} from "../lib/chainlink-brownie-contracts/contracts/sr
  */
 
 // create event after every storage update 
+
+//CHECKS EFFECTS INTERACTIONS. ( FOR MOST GAS EFFICIENCY)
 contract Raffle is VRFConsumerBaseV2{
     error Raffle__NotEnoughEth();
-    error Raffle_TransferFail();
-    error Raffle_NotOpen();
-    
+    error Raffle__TransferFail();
+    error Raffle__NotOpen();
+    error Raffle__UpKeepFail(uint256 Balance, uint256 state);
+
     enum WinnerState{OPEN, CALCULATING}
 
     uint16 private constant REQUEST_CONFIRM = 3;
@@ -46,23 +49,35 @@ contract Raffle is VRFConsumerBaseV2{
     function getTicketPrice() public view returns(uint256) {
         return i_TICKETPRICE;
     }
+
     function enter() external payable{
         if(msg.value < i_TICKETPRICE){
             revert Raffle__NotEnoughEth();
         }
         if (s_winnerState != WinnerState.OPEN){
-            revert Raffle_NotOpen();
+            revert Raffle__NotOpen();
         }
         s_players.push(payable(msg.sender));
         emit EnteredRaffle((msg.sender));
     }
 
+    //function for chainlink automation to call
+    /* refer here: https://docs.chain.link/chainlink-automation/guides/compatible-contracts */
+    function checkUpKeep(bytes memory /* checkdata */) public view returns (bool upkeepNeeded, bytes memory){
+        bool timeHasPassed = (block.timestamp - s_lastTimeStamp) >= i_interval;
+        bool isOpen = WinnerState.OPEN == s_winnerState;
+        bool hasBalance = address(this).balance > 0;
+        bool hasPlayers = s_players.length > 0;
+        upkeepNeeded = (timeHasPassed && isOpen && hasBalance && hasPlayers);
+        return(upkeepNeeded, "0w0");
+    }
 
-    function pickWinner() external {
-        
-        if (block.timestamp - s_lastTimeStamp > i_interval){
-            revert();
+    function performUpkeep(bytes calldata /* performData */) external {
+        (bool isUpKeep,) = checkUpKeep("");
+        if(!isUpKeep){
+            revert Raffle__UpKeepFail(address(this).balance, uint256(s_winnerState));
         }
+        s_winnerState = WinnerState.CALCULATING;
         uint256 requestId = i_vrfCord.requestRandomWords(
             i_gasLane, // gas lane
             i_subId, //id with link
@@ -79,7 +94,7 @@ contract Raffle is VRFConsumerBaseV2{
         s_lastTimeStamp = block.timestamp;
         
         if (!success){
-            revert Raffle_TransferFail();
+            revert Raffle__TransferFail();
         }
         s_winnerState = WinnerState.OPEN;
         emit WinnerPicked(winner);
