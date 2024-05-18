@@ -17,7 +17,7 @@ contract HelperConfig is Script{
 
     NetworkConfig public currentNetworkConfig;
     constructor (){
-        if (block.chainid = 11155111){
+        if (block.chainid == 11155111){
             currentNetworkConfig = getSepoliaEthConfig();
         }
         else{
@@ -28,14 +28,14 @@ contract HelperConfig is Script{
         return NetworkConfig({
             ticketprice: 0.001 ether,
             interval: 30,
-            vrfCord: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625;
+            vrfCord: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625,
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subId: 0,
-            gasLimit: 500,000
-        })
+            gasLimit: 500000
+        });
     }
 
-    function getAnvilEthConfig() public view returns (NetworkConfig memory){
+    function getAnvilEthConfig() public returns (NetworkConfig memory){
         if(currentNetworkConfig.vrfCord != address(0)){
             return currentNetworkConfig;
         }
@@ -44,16 +44,16 @@ contract HelperConfig is Script{
         uint96 gasPriceLink = 1e9;
 
         vm.startBroadcast();
-        VRFCoordinatorV2Mock  vrfCoordinatorMock = new VRFCoordinatorV2Mock();
+        VRFCoordinatorV2Mock  vrfCoordinatorMock = new VRFCoordinatorV2Mock(baseFee, gasPriceLink);
         vm.stopBroadcast();
 
         return NetworkConfig({
             ticketprice: 0.001 ether,
             interval: 30,
-            vrfCord: address(vrfCoordinatorMock);
+            vrfCord: address(vrfCoordinatorMock),
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subId: 0,
-            gasLimit: 500,000
-        })
+            gasLimit: 500000
+        });
     }
 }
