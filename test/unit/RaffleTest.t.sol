@@ -20,6 +20,7 @@ contract RaffleTest is Test {
     bytes32 gasLane; 
     uint64 subId; 
     uint32 gasLimit;
+    address link;
 
     function setUp() external {
         DeployRaffle deployer = new DeployRaffle();
@@ -30,7 +31,8 @@ contract RaffleTest is Test {
          vrfCord,
          gasLane, 
         subId,
-        gasLimit
+        gasLimit,
+        link
         ) = helperConfig.currentNetworkConfig();
 
     }
@@ -51,8 +53,5 @@ contract RaffleTest is Test {
         raffle.enter{value: MONI}();
         address playerAdd = raffle.getPlayer(0);
         assert(playerAdd == PLAYER);
-        
     }
-
-
 }
