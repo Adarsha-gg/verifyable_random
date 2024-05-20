@@ -98,7 +98,14 @@ contract Raffle is VRFConsumerBaseV2{
         }
         s_winnerState = WinnerState.OPEN;
         emit WinnerPicked(winner);
-    
+    }
+
+    function getRaffleState() external returns (WinnerState) {
+        return s_winnerState;
+    }
+
+    function getPlayer(uint256 index) external view returns(address){
+        return s_players[index];
     }
 }
 
