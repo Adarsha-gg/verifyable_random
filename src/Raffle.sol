@@ -17,6 +17,7 @@ contract Raffle is VRFConsumerBaseV2{
     error Raffle__UpKeepFail(uint256 Balance, uint256 state);
 
     enum WinnerState{OPEN, CALCULATING}
+    
 
     uint16 private constant REQUEST_CONFIRM = 3;
     uint32 private constant WORDS = 1;
@@ -34,6 +35,7 @@ contract Raffle is VRFConsumerBaseV2{
     
     event EnteredRaffle(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestRaffle(uint256 indexed requestId);
     
     constructor(uint256 ticketprice, uint256 interval, address vrfCord, bytes32 gasLane, uint64 subId, uint32 gasLimit)
     VRFConsumerBaseV2(vrfCord){
@@ -84,6 +86,7 @@ contract Raffle is VRFConsumerBaseV2{
             REQUEST_CONFIRM, 
             i_gasLimit,
             WORDS);
+        emit RequestRaffle(requestId);    
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override{
@@ -107,5 +110,14 @@ contract Raffle is VRFConsumerBaseV2{
     function getPlayer(uint256 index) external view returns(address){
         return s_players[index];
     }
+
+    function getLengthOfPlayers() external view returns(uint256){
+        return s_players.length;
+    }
+
+    function getLastTimeStamp() external view returns(uint256){
+        return s_lastTimeStamp;
+    }
+        
 }
 

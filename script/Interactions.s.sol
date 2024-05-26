@@ -7,6 +7,7 @@ import {HelperConfig} from "../script/HelperConfig.s.sol";
 import {VRFCoordinatorV2Mock} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
 import {LinkToken} from  "../test/Mocks/Link.t.sol";
 import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
+
 contract CreateSub is Script{
     function createSubUserConfig() public returns(uint64){
         HelperConfig helperConfig = new HelperConfig();
@@ -30,11 +31,11 @@ contract CreateSub is Script{
 }
 
 contract FundSub is Script{
-    uint96 public constant MONI = 2 ether;
+    uint96 public constant MONI = 10 ether;
 
     function FundSubUsingConfig() public {
         HelperConfig helperConfig = new HelperConfig();
-        (, ,address vrfCord, , uint64 subId, , address link ) = helperConfig.currentNetworkConfig();
+        (, ,address vrfCord, , uint64 subId, , address link) = helperConfig.currentNetworkConfig();
         fundSub(vrfCord, subId, link);
     
     }
